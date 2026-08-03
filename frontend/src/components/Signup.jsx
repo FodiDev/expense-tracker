@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signupStyles } from '../assets/dummyStyles';
 
-const Signup = ({ API_URL = 'http://localhost:4000/api', onSignup }) => {
+const Signup = ({
+  API_URL = 'https://expense-tracker-exiqfbdak-fodi2592-gmailcoms-projects.vercel.app/api',
+  onSignup,
+}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
