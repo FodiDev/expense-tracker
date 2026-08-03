@@ -5,8 +5,7 @@ import img1 from '../assets/logo.png';
 import { ChevronDown, LogOut, User } from 'lucide-react';
 import axios from 'axios';
 
-const BASE_URL =
-  'https://expense-tracker-exiqfbdak-fodi2592-gmailcoms-projects.vercel.app/api';
+const BASE_URL = 'http://localhost:4000/api';
 
 const Navbar = ({ user: propUser, onLogout }) => {
   const navigate = useNavigate();

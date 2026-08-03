@@ -15,8 +15,7 @@ import Income from './pages/Income';
 import Expense from './pages/Expense';
 import Profile from './pages/Profile';
 
-const API_URL =
-  'https://expense-tracker-exiqfbdak-fodi2592-gmailcoms-projects.vercel.app/api';
+const API_URL = 'http://localhost:4000/api';
 
 //To get transaction
 const getTransactionsFromStorage = () => {
