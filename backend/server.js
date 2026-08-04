@@ -13,7 +13,10 @@ const port = process.env.PORT || 4000;
 // Middleware
 app.use(
   cors({
-    origin: ['http://localhost:5173', process.env.FRONTEND_URL],
+    origin: [
+      'https://expense-tracker-frontend-tlpt.onrender.com/login',
+      process.env.FRONTEND_URL,
+    ],
     credentials: true,
   })
 );
