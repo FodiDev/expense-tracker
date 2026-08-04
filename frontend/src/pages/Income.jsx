@@ -31,7 +31,7 @@ import { getTimeFrameRange, generateChartPoints } from '../components/Helpers';
 import { INCOME_COLORS, CATEGORY_ICONS_Inc } from '../assets/color';
 import { incomeStyles as styles } from '../assets/dummyStyles';
 
-const API_BASE = 'https://expense-tracker-backend4-guss.onrender.com/api';
+const API_BASE = 'https://expense-tracker-backend-sz4u.onrender.com/api';
 
 //Helps in converting date to ISO time
 function toIsoWithClientTime(dateValue) {

@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signupStyles } from '../assets/dummyStyles';
 
 const Signup = ({
-  API_URL = 'https://expense-tracker-backend4-guss.onrender.com/api',
+  API_URL = 'https://expense-tracker-backend-sz4u.onrender.com/api',
   onSignup,
 }) => {
   const [name, setName] = useState('');

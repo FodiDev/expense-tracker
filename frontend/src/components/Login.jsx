@@ -6,7 +6,7 @@ import { loginStyles } from '../assets/dummyStyles';
 
 const Login = ({
   onLogin,
-  API_URL = 'https://expense-tracker-backend4-guss.onrender.com/api',
+  API_URL = 'https://expense-tracker-backend-sz4u.onrender.com/api',
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

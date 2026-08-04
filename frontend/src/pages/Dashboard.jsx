@@ -44,7 +44,7 @@ import {
 } from 'recharts';
 import AddTransactionModal from '../components/Add';
 
-const API_BASE = 'https://expense-tracker-backend4-guss.onrender.com/api';
+const API_BASE = 'https://expense-tracker-backend-sz4u.onrender.com/api';
 
 const getAuthHeader = () => {
   const token =

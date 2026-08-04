@@ -5,7 +5,7 @@ import img1 from '../assets/logo.png';
 import { ChevronDown, LogOut, User } from 'lucide-react';
 import axios from 'axios';
 
-const BASE_URL = 'https://expense-tracker-backend4-guss.onrender.com/api';
+const BASE_URL = 'https://expense-tracker-backend-sz4u.onrender.com/api';
 
 const Navbar = ({ user: propUser, onLogout }) => {
   const navigate = useNavigate();

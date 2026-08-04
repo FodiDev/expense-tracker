@@ -26,7 +26,7 @@ import { styles } from '../assets/dummyStyles';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
-const API_BASE = 'https://expense-tracker-backend4-guss.onrender.com/api';
+const API_BASE = 'https://expense-tracker-backend-sz4u.onrender.com/api';
 
 const CATEGORY_ICONS = {
   Food: <Utensils className="w-4 h-4" />,

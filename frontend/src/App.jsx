@@ -15,7 +15,7 @@ import Income from './pages/Income';
 import Expense from './pages/Expense';
 import Profile from './pages/Profile';
 
-const API_URL = 'https://expense-tracker-backend4-guss.onrender.com/api';
+const API_URL = 'https://expense-tracker-backend-sz4u.onrender.com/api';
 
 //To get transaction
 const getTransactionsFromStorage = () => {
