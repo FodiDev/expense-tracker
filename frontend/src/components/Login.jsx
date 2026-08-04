@@ -184,7 +184,7 @@ const Login = ({
               <input
                 type="checkbox"
                 id="remember"
-                check={rememberMe}
+                checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className={loginStyles.checkbox}
                 required
