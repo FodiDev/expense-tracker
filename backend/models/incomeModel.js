@@ -4,19 +4,22 @@ const incomeSchema = new mongoose.Schema(
   {
     description: {
       type: String,
-      required: true,
+      required: [true, 'Description is required'],
+      trim: true,
     },
     amount: {
       type: Number,
-      required: true,
+      required: [true, 'Amount is required'],
+      min: [0.01, 'Amount must be greater than zero'],
     },
     category: {
       type: String,
-      required: true,
+      required: [true, 'Category is required'],
+      trim: true,
     },
     date: {
       type: Date,
-      required: true,
+      required: [true, 'Date is required'],
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +33,7 @@ const incomeSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const incomeModel =

@@ -1,36 +1,46 @@
 import expenseModel from '../models/expenseModel.js';
 import getDateRange from '../utils/datafilter.js';
 import XLSX from 'xlsx';
+import { validateTransaction } from '../utils/validateTransaction.js';
 
 // Add Expense
 export async function addExpense(req, res) {
-  const userId = req.user._id;
-  const { description, amount, category, date } = req.body;
-
   try {
-    if (!description || !amount || !category || !date) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields are required',
-      });
-    }
-    const newExpense = new expenseModel({
-      userId,
+    const { description, amount, category, date } = req.body;
+
+    const validation = validateTransaction({
       description,
       amount,
       category,
-      date: new Date(date),
+      date,
     });
-    await newExpense.save();
-    res.json({
+
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        errors: validation.errors,
+      });
+    }
+
+    const expense = await expenseModel.create({
+      userId: req.user._id,
+      description: description.trim(),
+      amount: Number(amount),
+      category: category.trim(),
+      date,
+    });
+
+    return res.status(201).json({
       success: true,
-      message: 'Expense added successfully!',
+      message: 'Expense added successfully.',
+      expense,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error('Add expense error:', error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Server error while adding expense.',
     });
   }
 }
@@ -52,37 +62,58 @@ export async function getAllExpense(req, res) {
 
 // To update the expense
 export async function updateExpense(req, res) {
-  const { id } = req.params;
-  const userId = req.user._id;
-  const { description, amount } = req.body;
-
   try {
-    const updatedExpense = await expenseModel.findOneAndUpdate(
-      {
-        _id: id,
-        userId,
-      },
-      { description, amount },
-      { new: true },
-    );
+    const { description, amount, category, date } = req.body;
 
-    if (!updatedExpense) {
-      return res.status(404).json({
+    const validation = validateTransaction({
+      description,
+      amount,
+      category,
+      date,
+    });
+
+    if (!validation.isValid) {
+      return res.status(400).json({
         success: false,
-        message: 'Expense not found',
+        errors: validation.errors,
       });
     }
 
-    res.json({
+    const expense = await expenseModel.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user._id,
+      },
+      {
+        description: description.trim(),
+        amount: Number(amount),
+        category: category.trim(),
+        date,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: 'Expense not found.',
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       message: 'Expense updated successfully.',
-      data: updatedExpense,
+      expense,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error('Update expense error:', error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Server error while updating expense.',
     });
   }
 }

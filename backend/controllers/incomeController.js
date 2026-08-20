@@ -1,37 +1,46 @@
 import incomeModel from '../models/incomeModel.js';
 import XLSX from 'xlsx';
 import getDateRange from '../utils/datafilter.js';
+import { validateTransaction } from '../utils/validateTransaction.js';
 
 //add income
 export async function addIncome(req, res) {
-  const userId = req.user._id;
-  const { description, amount, category, date } = req.body;
-
   try {
-    if (!description || !amount || !category || !date) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields are required',
-      });
-    }
+    const { description, amount, category, date } = req.body;
 
-    const newIncome = new incomeModel({
-      userId,
+    const validation = validateTransaction({
       description,
       amount,
       category,
-      date: new Date(date),
+      date,
     });
-    await newIncome.save();
-    res.json({
+
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        errors: validation.errors,
+      });
+    }
+
+    const income = await incomeModel.create({
+      userId: req.user._id,
+      description: description.trim(),
+      amount: Number(amount),
+      category: category.trim(),
+      date,
+    });
+
+    return res.status(201).json({
       success: true,
-      message: 'Income added successfully!',
+      message: 'Income added successfully.',
+      income,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error('Add income error:', error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Server error while adding income.',
     });
   }
 }
@@ -53,37 +62,58 @@ export async function getAllIncome(req, res) {
 
 //update an income
 export async function updateIncome(req, res) {
-  const { id } = req.params;
-  const userId = req.user._id;
-  const { description, amount } = req.body;
-
   try {
-    const updatedIncome = await incomeModel.findOneAndUpdate(
-      {
-        _id: id,
-        userId,
-      },
-      { description, amount },
-      { new: true },
-    );
+    const { description, amount, category, date } = req.body;
 
-    if (!updatedIncome) {
-      return res.status(404).json({
+    const validation = validateTransaction({
+      description,
+      amount,
+      category,
+      date,
+    });
+
+    if (!validation.isValid) {
+      return res.status(400).json({
         success: false,
-        message: 'Income not found',
+        errors: validation.errors,
       });
     }
 
-    res.json({
+    const income = await incomeModel.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user._id,
+      },
+      {
+        description: description.trim(),
+        amount: Number(amount),
+        category: category.trim(),
+        date,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!income) {
+      return res.status(404).json({
+        success: false,
+        message: 'Income not found.',
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       message: 'Income updated successfully.',
-      data: updatedIncome,
+      income,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error('Update income error:', error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Server error while updating income.',
     });
   }
 }
