@@ -64,7 +64,7 @@ export async function updateIncome(req, res) {
         userId,
       },
       { description, amount },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedIncome) {
@@ -91,7 +91,10 @@ export async function updateIncome(req, res) {
 //To delete an income
 export async function deleteIncome(req, res) {
   try {
-    const income = await incomeModel.findByIdAndDelete({ _id: req.params.id });
+    const income = await incomeModel.findByIdAndDelete({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
     if (!income) {
       return res.status(404).json({
         success: false,
@@ -103,10 +106,10 @@ export async function deleteIncome(req, res) {
       message: 'Income deleted successfully.',
     });
   } catch (error) {
-    console.log(error);
+    console.error('Delete income error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Server error while deleting income',
     });
   }
 }

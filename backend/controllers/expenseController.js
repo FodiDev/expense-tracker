@@ -63,7 +63,7 @@ export async function updateExpense(req, res) {
         userId,
       },
       { description, amount },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedExpense) {
@@ -92,6 +92,7 @@ export async function deleteExpense(req, res) {
   try {
     const expense = await expenseModel.findByIdAndDelete({
       _id: req.params.id,
+      userId: req.user._id,
     });
     if (!expense) {
       return res.status(404).json({
@@ -99,15 +100,15 @@ export async function deleteExpense(req, res) {
         message: 'Expense not found',
       });
     }
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: 'Expense deleted successfully.',
     });
   } catch (error) {
-    console.log(error);
+    console.error('Delete expense error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: 'Server error while deleting expense.',
     });
   }
 }
