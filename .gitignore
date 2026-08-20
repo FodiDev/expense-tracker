@@ -1,3 +1,6 @@
 # Environment Variables
 node_modules/
 *.env
+
+# Generated export files
+*.xlsx
