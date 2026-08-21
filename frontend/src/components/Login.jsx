@@ -3,100 +3,96 @@ import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginStyles } from '../assets/dummyStyles';
+import { useAuth } from '../hooks/useAuth';
 
-const Login = ({
-  onLogin,
-  API_URL = 'https://expense-tracker-backend-sz4u.onrender.com/api',
-}) => {
+const API_URL = 'https://expense-tracker-backend-sz4u.onrender.com/api';
+
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
-  // To Fetch Profile
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  // Fetch the user profile if the login response
+  // does not include a user object
   const fetchProfile = async (token) => {
     if (!token) return null;
-    const res = await axios.get(`${API_URL}/user/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+
+    const response = await axios.get(`${API_URL}/user/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-    return res.data;
+
+    return response.data.user || response.data;
   };
 
-  const persistAuth = (profile, token) => {
-    const storage = rememberMe ? localStorage : sessionStorage;
-    try {
-      if (token) storage.setItem('token', token);
-      if (profile) storage.setItem('user', JSON.stringify(profile));
-    } catch (error) {
-      console.error('Storage Error:', error);
-    }
-  };
-
-  // To Login
+  // Login user
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setIsLoading(true);
     setError('');
 
     try {
-      const res = await axios.post(
+      const response = await axios.post(
         `${API_URL}/user/login`,
         { email, password },
-        { headers: { 'Content-Type': 'application/json' } },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
       );
-      const data = res.data || {};
-      const token = data.token || null;
 
-      // To derive user profile
-      let profile = data.user ?? null;
-      if (!profile) {
-        const copy = { ...data };
-        delete copy.token;
-        delete copy.user;
+      const data = response.data || {};
+      const token = data.token;
 
-        if (Object.keys(copy).length) {
-          profile = copy;
-        }
+      if (!token) {
+        throw new Error('No authentication token was returned');
       }
 
-      if (!profile && token) {
-        try {
-          profile = await fetchProfile(token);
-        } catch (fetchErr) {
-          console.warn('COuld not fetch profile after login token:', fetchErr);
-          profile = { email };
-        }
+      // Get the user from the login response
+      let userData = data.user || null;
+
+      // If the backend does not return a user object,
+      // fetch the authenticated user's profile
+      if (!userData) {
+        userData = await fetchProfile(token);
       }
 
-      if (!profile) profile = { email };
-      persistAuth(profile, token);
-
-      if (typeof onLogin === 'function') {
-        try {
-          onLogin(profile, rememberMe, token);
-        } catch (callErr) {
-          console.warn('onLogin threw:', callErr);
-          navigate('/');
-        }
-      } else {
-        navigate('/');
+      if (!userData) {
+        throw new Error('Unable to retrieve user information');
       }
+
+      // AuthContext now handles:
+      // - localStorage/sessionStorage
+      // - token state
+      // - user state
+      await login(userData, token, rememberMe);
+
       setPassword('');
+
+      navigate('/');
     } catch (err) {
-      console.error('Login error:', err?.response || err);
+      console.error('Login error:', err.response || err);
+
       const serverMsg =
         err.response?.data?.message ||
-        (err.response?.data ? JSON.stringify(err.response.data) : null) ||
         err.message ||
-        'Login failed';
+        'Login failed. Please try again.';
+
       setError(serverMsg);
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className={loginStyles.pageContainer}>
       <div className={loginStyles.cardContainer}>
@@ -104,11 +100,14 @@ const Login = ({
           <div className={loginStyles.avatar}>
             <User className="w-10 h-10 text-white" />
           </div>
+
           <h1 className={loginStyles.headerTitle}>Welcome Back</h1>
+
           <p className={loginStyles.headerSubtitle}>
             Sign in to your ExpenseTracker account
           </p>
         </div>
+
         <div className={loginStyles.formContainer}>
           {error && (
             <div className={loginStyles.errorContainer}>
@@ -126,19 +125,23 @@ const Login = ({
                   />
                 </svg>
               </div>
+
               <span className={loginStyles.errorText}>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
+            {/* Email */}
             <div className="mb-6">
               <label htmlFor="email" className={loginStyles.label}>
                 Email Address
               </label>
+
               <div className={loginStyles.inputContainer}>
                 <div className={loginStyles.inputIcon}>
                   <Mail className="w-5 h-5" />
                 </div>
+
                 <input
                   type="email"
                   id="email"
@@ -150,14 +153,18 @@ const Login = ({
                 />
               </div>
             </div>
+
+            {/* Password */}
             <div className="mb-6">
               <label htmlFor="password" className={loginStyles.label}>
                 Password
               </label>
+
               <div className={loginStyles.inputContainer}>
                 <div className={loginStyles.inputIcon}>
                   <Lock className="w-5 h-5" />
                 </div>
+
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
@@ -167,10 +174,12 @@ const Login = ({
                   placeholder="******"
                   required
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className={loginStyles.passwordToggle}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -180,6 +189,8 @@ const Login = ({
                 </button>
               </div>
             </div>
+
+            {/* Remember Me */}
             <div className={loginStyles.checkboxContainer}>
               <input
                 type="checkbox"
@@ -188,10 +199,13 @@ const Login = ({
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className={loginStyles.checkbox}
               />
+
               <label htmlFor="remember" className={loginStyles.checkboxLabel}>
                 Remember Me
               </label>
             </div>
+
+            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
@@ -215,6 +229,7 @@ const Login = ({
                       stroke="currentColor"
                       strokeWidth="4"
                     />
+
                     <path
                       className="opacity-75"
                       fill="currentColor"
@@ -224,13 +239,14 @@ const Login = ({
                   Signing in...
                 </>
               ) : (
-                'Signed In'
+                'Sign In'
               )}
             </button>
           </form>
+
           <div className={loginStyles.signUpContainer}>
             <p className={loginStyles.signUpText}>
-              Don't have an account?{'  '}
+              Don't have an account?{' '}
               <Link to="/signup" className={loginStyles.signUpLink}>
                 Create Account
               </Link>
