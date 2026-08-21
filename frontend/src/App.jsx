@@ -100,47 +100,41 @@ const App = () => {
   };
 
   //Try to load user with token when mounted
+  // Verify the stored authentication token when the app starts
   useEffect(() => {
-    (async () => {
+    const bootstrapAuth = async () => {
       try {
-        const localUserRaw = localStorage.getItem('user');
-        const sessionUserRaw = sessionStorage.getItem('user');
         const localToken = localStorage.getItem('token');
         const sessionToken = sessionStorage.getItem('token');
 
-        const storedUser = localUserRaw
-          ? JSON.parse(localUserRaw)
-          : sessionUserRaw
-          ? JSON.parse(sessionUserRaw)
-          : null;
+        const storedToken = localToken || sessionToken;
+        const remember = Boolean(localToken);
 
-        const storedToken = localToken || sessionToken || null;
-        const tokenFromLocal = !!localToken;
-
-        if (storedUser) {
-          setUser(storedUser);
-          setToken(storedToken);
-          setIsLoading(false);
+        // No token means the user is not authenticated
+        if (!storedToken) {
+          clearAuth();
           return;
         }
 
-        if (storedToken) {
-          try {
-            const res = await axios.get(`${API_URL}/user/me`, {
-              headers: { Authorization: `Bearer ${storedToken}` },
-            });
-            const profile = res.data;
-            persistAuth(profile, storedToken, tokenFromLocal);
-          } catch (fetchErr) {
-            console.warn(
-              'Could not fetch profile with the stored token',
-              fetchErr
-            );
-            clearAuth();
-          }
-        }
+        // Verify the token and retrieve the current user from the backend
+        const response = await axios.get(`${API_URL}/user/me`, {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        });
+
+        const userData = response.data.user || response.data;
+
+        // Only restore authentication after successful verification
+        persistAuth(userData, storedToken, remember);
       } catch (error) {
-        console.error('error bootstrapping auth:', error);
+        console.warn(
+          'Stored authentication token is invalid or expired:',
+          error.response?.data?.message || error.message,
+        );
+
+        // Invalid or expired token → completely clear authentication
+        clearAuth();
       } finally {
         setIsLoading(false);
 
@@ -150,7 +144,9 @@ const App = () => {
           console.error('Error loading transactions:', txErr);
         }
       }
-    })();
+    };
+
+    bootstrapAuth();
   }, []);
 
   useEffect(() => {
@@ -181,7 +177,7 @@ const App = () => {
     setTransactions((p) => [newTransaction, ...p]);
   const editTransaction = (id, updatedTransaction) =>
     setTransactions((p) =>
-      p.map((t) => (t.id === id ? { ...updatedTransaction, id } : t))
+      p.map((t) => (t.id === id ? { ...updatedTransaction, id } : t)),
     );
   const deleteTransaction = (id) =>
     setTransactions((p) => p.filter((t) => t.id !== id));

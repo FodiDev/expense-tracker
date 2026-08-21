@@ -50,8 +50,8 @@ const Signup = ({
     }
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
     }
 
     setErrors(newErrors);
@@ -69,7 +69,7 @@ const Signup = ({
       const res = await axios.post(
         `${API_URL}/user/register`,
         { name, email, password },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { 'Content-Type': 'application/json' } },
       );
       const data = res.data || {};
       const token = data.token ?? null;

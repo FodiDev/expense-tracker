@@ -43,7 +43,7 @@ const PasswordInput = memo(
       </div>
       {error && <p className={profileStyles.errorText}>{error}</p>}
     </div>
-  )
+  ),
 );
 
 PasswordInput.displayName = 'PasswordInput';
@@ -73,7 +73,7 @@ const Profile = ({ onUpdateProfile, onLogout }) => {
 
   const getAuthToken = useCallback(
     () => localStorage.getItem('token') || sessionStorage.getItem('token'),
-    []
+    [],
   );
 
   //API Request
@@ -81,7 +81,7 @@ const Profile = ({ onUpdateProfile, onLogout }) => {
     async (method, endpoint, data = null) => {
       const token = getAuthToken();
       if (!token) {
-        navigate('/login');
+        onLogout?.();
         return null;
       }
 
@@ -98,14 +98,14 @@ const Profile = ({ onUpdateProfile, onLogout }) => {
       } catch (error) {
         console.error(`${method} request error:`, error);
         if (error.response?.status === 401) {
-          navigate('/login');
+          onLogout?.();
         }
         throw error;
       } finally {
         setLoading(false);
       }
     },
-    [getAuthToken, navigate]
+    [getAuthToken, onLogout],
   );
 
   //To fetch current user
@@ -157,7 +157,7 @@ const Profile = ({ onUpdateProfile, onLogout }) => {
         toast.success('Profile updated successfully!');
       }
     } catch (error) {
-      toast.error(error.message?.data?.message || 'Failed to update profile');
+      toast.error(error.response?.data?.message || 'Failed to update profile');
     }
   };
 
@@ -199,14 +199,13 @@ const Profile = ({ onUpdateProfile, onLogout }) => {
       //Reset Password Visibility
       setShowPassword({ current: false, new: false, confirm: false });
     } catch (error) {
-      toast.error(error.message?.data?.message || 'Failed to change password');
+      toast.error(error.response?.data?.message || 'Failed to change password');
     }
   };
 
   const handleLogout = useCallback(() => {
     onLogout?.();
-    navigate('/signup');
-  }, [onLogout, navigate]);
+  }, [onLogout]);
 
   const closePasswordModal = useCallback(() => {
     if (!loading) {

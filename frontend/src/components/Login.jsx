@@ -45,7 +45,7 @@ const Login = ({
       const res = await axios.post(
         `${API_URL}/user/login`,
         { email, password },
-        { headers: { 'Content-Type': 'application/json' } }
+        { headers: { 'Content-Type': 'application/json' } },
       );
       const data = res.data || {};
       const token = data.token || null;
@@ -187,7 +187,6 @@ const Login = ({
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className={loginStyles.checkbox}
-                required
               />
               <label htmlFor="remember" className={loginStyles.checkboxLabel}>
                 Remember Me
